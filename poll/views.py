@@ -19,6 +19,7 @@ def index(request):
 
     #output = ' ,'.join([q.question_text for q in latest_question_list])
     return HttpResponse(template.render(context,request))
+    #return render(request, 'index.html', context)
 def detail(request,question_id):
     try:
         question = Question.objects.get(pk=question_id)
@@ -57,5 +58,9 @@ class ResultView(generic.DetailView):
     model = Question
     template_name = "poll/results.html"
 
+def get_queryset(self):
+    return Question.objects.filter(
+        pub_date__lte = timezone.now()
+    ).order_by('-pub_date')[:5]
     
     
