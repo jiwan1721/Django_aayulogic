@@ -65,4 +65,65 @@ class ResultView(generic.DetailView):
     template_name = "poll/results.html"
 
 
+#for serialization of data
+from rest_framework.decorators import api_view, renderer_classes
+from django.http import JsonResponse # to import jason response because we have to use Jasonresponse in function
+from rest_framework.reverse import reverse
+from rest_framework.response import Response
+#this function is used to print root api
+from .serializers import QuestionSerializer,ChoiceSerializers
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer,BrowsableAPIRenderer
+
+
+
+
+
+#if we use funcction for serializers we have to use  @api_view and need to define method get or post
+@api_view(['GET','POST'])
+@renderer_classes([JSONRenderer,BrowsableAPIRenderer])
+def QuestionSerializer_func(request,format= None):
+    if request.method =='GET':
+        data = Question.objects.all()
+        serializer_data = QuestionSerializer(data,many=True)
+        return Response(serializer_data.data)
     
+    elif request.method =='POST':
+        data = JSONParser().parse(request)
+        serializer_data = QuestionSerializer(data=data)
+        if serializer_data.is_valid():
+            serializer_data.save()
+            return Response(serializer_data.data,status = 201)
+        return Response(serializers_data.errors, status = 400)
+
+@api_view(['GET','UPDATE','DELETE','PUT'])
+@renderer_classes([JSONRenderer,BrowsableAPIRenderer])
+def question_num(request,pk,format=None):
+    data = Question.objects.all().filter(pk = pk)
+    serializer_data = QuestionSerializer(data,many=True)
+    return Response(serializer_data.data)
+
+
+@api_view(['GET','UPDATE','DELETE','PUT'])
+@renderer_classes([JSONRenderer,BrowsableAPIRenderer])
+def Choice_serializers_func(request,format=None):
+    data = Choice.objects.all()
+    serializer_data = ChoiceSerializers(data,many=True)
+    return Response(serializer_data.data)
+
+
+@api_view(['GET','UPDATE','DELETE','PUT'])
+@renderer_classes([JSONRenderer,BrowsableAPIRenderer])
+def choice_num(request,pk,format=None):
+    data = Choice.objects.all().filter(pk=pk)
+    serializer_data = ChoiceSerializers(data,many=True)
+    return Response(serializer_data.data)    
+    
+@api_view(['GET'])
+@renderer_classes([JSONRenderer,BrowsableAPIRenderer])
+def api_root(request,format= None):
+
+    return Response({
+        'questions':reverse('poll:question-name',request = request, format = format),
+        'choice':reverse('poll:choices',request=request,format=format)
+    })
