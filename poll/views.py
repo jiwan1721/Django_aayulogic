@@ -125,5 +125,62 @@ def api_root(request,format= None):
 
     return Response({
         'questions':reverse('poll:question-name',request = request, format = format),
-        'choice':reverse('poll:choices',request=request,format=format)
+        'choice':reverse('poll:choices',request=request,format=format),
+        'filterBackendQuestion':reverse('poll:choice-list',request = request,format = format),
+        'serrch_question':reverse('poll:search-list',request = request,format = format),
+        # 'custom_search':reverse('poll:custom-search',request= request,format=format)
+        'search-ordering':reverse('poll:search-order',request = request,format = format)
     })
+    
+    
+    
+from rest_framework import generics
+from django_filters import rest_framework as filters
+from rest_framework.views import APIView
+from django_filters.rest_framework import DjangoFilterBackend
+
+# @APIView
+class question_list(generics.ListAPIView):
+    queryset = Question.objects.all()
+
+    
+    serializer_class = QuestionSerializer
+    filterset_fields = ['question_text']
+   
+    
+    # filter_backends = [filters.SearchFilter]
+    # def list(self, request):
+        
+    #     queryset= self.get_queryset()
+    #     serializer = QuestionSerializer(queryset,many=True)
+    #     return Response(serializer.data)
+
+from rest_framework import filters
+
+class serarch_question(generics.ListAPIView):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+    filter_backends = [filters.SearchFilter]
+    # search_fields = ['^question_text']   {it will search by first word}
+    # search_fields = ['id']  { it searche using id}  
+    search_fields = ['question_text'] # it works like i contains
+
+
+''' this is using because we want to use order filter in drf '''
+class orderingQuestion(generics.ListAPIView):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+    filter_backends = [filters.OrderingFilter]
+    # ordering_fields = ['question_text']  it orders only question_text
+    ordering_fields = '__all__'    #special order
+    ordering_fields = ['id','question_text']
+    ordering = ['question_text']
+
+#to use custom search filter
+'''not working this function'''
+
+# class CustomSearchFilter(filters.SearchFilter):
+#     def get_search_fields(self, view, request):
+#         if request.query_params.get('question_text_only'):
+#             return ['question_text']
+#         return super().get_search_fields(view, request)
